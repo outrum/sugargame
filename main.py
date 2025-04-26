@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Mobile-first IQ Puzzle Game: Multi-level, feedback, animation, progress tracker. Sound optional.
+Mobile-first IQ Puzzle Game: Always-show pattern button, fixed moves, clear instructions.
 """
 import pygame
 import time
@@ -71,7 +71,6 @@ class Tile:
 class PuzzleGame:
     def __init__(self):
         pygame.init()
-        # DO NOT call pygame.mixer.init() to avoid errors on cloud/virtual environments
         self.screen = pygame.display.set_mode((400, 600))
         pygame.display.set_caption("IQ Puzzle Game")
         self.clock = pygame.time.Clock()
@@ -90,7 +89,7 @@ class PuzzleGame:
         self.reset()
     def reset(self):
         level_data = LEVELS[self.level]
-        self.moves = level_data["moves"]
+        self.moves = int(level_data["moves"])  # Ensure moves is always set correctly
         self.solution = level_data["solution"]
         self.grid = [[Tile(r, c, self.tile_size()) for c in range(GRID_SIZE)] for r in range(GRID_SIZE)]
         self.solved = False
@@ -102,11 +101,28 @@ class PuzzleGame:
         w, h = self.screen.get_size()
         size = min((w - (GRID_SIZE+1)*TILE_MARGIN)//GRID_SIZE, (h-200 - (GRID_SIZE+1)*TILE_MARGIN)//GRID_SIZE)
         return size
+    def draw_pattern_preview(self, offset_x, offset_y, tile_size):
+        # Draw a small preview of the solution pattern above the main grid
+        preview_tile = tile_size // 3
+        preview_offset_x = offset_x + tile_size*GRID_SIZE//2 - (preview_tile*GRID_SIZE)//2
+        preview_offset_y = offset_y - preview_tile*GRID_SIZE - 20
+        for r in range(GRID_SIZE):
+            for c in range(GRID_SIZE):
+                color = COLORS[self.solution[r][c]]
+                rect = pygame.Rect(
+                    preview_offset_x + c*(preview_tile+2),
+                    preview_offset_y + r*(preview_tile+2),
+                    preview_tile, preview_tile)
+                pygame.draw.rect(self.screen, color, rect, border_radius=6)
+        label = self.font.render("Pattern", True, (80,80,80))
+        self.screen.blit(label, (preview_offset_x, preview_offset_y-30))
     def draw(self):
         self.screen.fill((250,250,250))
         tile_size = self.tile_size()
         offset_x = (self.screen.get_width() - (tile_size*GRID_SIZE + TILE_MARGIN*(GRID_SIZE-1)))//2
-        offset_y = 120
+        offset_y = 160
+        # Draw pattern preview
+        self.draw_pattern_preview(offset_x, offset_y, tile_size)
         # Draw tiles with feedback
         for r, row in enumerate(self.grid):
             for c, tile in enumerate(row):
@@ -125,26 +141,21 @@ class PuzzleGame:
         level_surf = self.font.render(f"Level: {self.level+1} of {len(LEVELS)}", True, (0,0,0))
         self.screen.blit(level_surf, (20, 60))
         # Draw instructions
-        instr = self.font.render("Tap tiles to match pattern", True, (80,80,80))
+        instr = self.font.render("Tap tiles to match the pattern below", True, (80,80,80))
         self.screen.blit(instr, (20, 100))
         # Draw result and buttons
+        restart_btn = self.font.render("Restart", True, (0,0,200))
+        self.screen.blit(restart_btn, (250, 20))
+        pattern_btn = self.font.render("Show Pattern", True, (150,80,0))
+        self.screen.blit(pattern_btn, (120, 550))
         if self.solved:
             msg = self.font.render("Solved! ", True, (0,180,0))
             self.screen.blit(msg, (100, 500))
             next_btn = self.font.render("Next", True, (0,0,200))
-            self.screen.blit(next_btn, (250, 20))
+            self.screen.blit(next_btn, (250, 60))
         elif self.failed:
             msg = self.font.render("Out of moves!", True, (200,0,0))
             self.screen.blit(msg, (100, 500))
-            restart_btn = self.font.render("Restart", True, (0,0,200))
-            self.screen.blit(restart_btn, (250, 20))
-            sol_btn = self.font.render("Show Solution", True, (150,80,0))
-            self.screen.blit(sol_btn, (120, 550))
-        else:
-            restart_btn = self.font.render("Restart", True, (0,0,200))
-            self.screen.blit(restart_btn, (250, 20))
-            sol_btn = self.font.render("Show Solution", True, (150,80,0))
-            self.screen.blit(sol_btn, (120, 550))
         # Draw solution overlay if needed
         if self.showing_solution:
             surf = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
@@ -158,7 +169,7 @@ class PuzzleGame:
                         tile_size, tile_size)
                     pygame.draw.rect(surf, color, rect, border_radius=12)
             self.screen.blit(surf, (0,0))
-            label = self.font.render("Solution", True, (150,80,0))
+            label = self.font.render("Pattern", True, (150,80,0))
             self.screen.blit(label, (140, 40))
         pygame.display.flip()
     def check_solution(self):
@@ -168,33 +179,32 @@ class PuzzleGame:
                     return False
         return True
     def handle_tap(self, pos):
-        if self.solved:
-            btn_rect = pygame.Rect(250, 20, 120, 40)
-            if btn_rect.collidepoint(pos):
-                if self.level < len(LEVELS)-1:
-                    self.level += 1
-                    self.reset()
-                else:
-                    self.level = 0
-                    self.reset()
+        btn_rect = pygame.Rect(250, 20, 120, 40)
+        next_btn_rect = pygame.Rect(250, 60, 120, 40)
+        pattern_btn_rect = pygame.Rect(120, 550, 200, 40)
+        if btn_rect.collidepoint(pos):
+            self.reset()
             return
-        if self.failed:
-            btn_rect = pygame.Rect(250, 20, 120, 40)
-            if btn_rect.collidepoint(pos):
+        if next_btn_rect.collidepoint(pos) and self.solved:
+            if self.level < len(LEVELS)-1:
+                self.level += 1
                 self.reset()
-                return
-            sol_btn_rect = pygame.Rect(120, 550, 200, 40)
-            if sol_btn_rect.collidepoint(pos):
-                self.showing_solution = not self.showing_solution
-                if self.fail_sound: self.fail_sound.play()
-                return
+            else:
+                self.level = 0
+                self.reset()
+            return
+        if pattern_btn_rect.collidepoint(pos):
+            self.showing_solution = not self.showing_solution
+            return
         if self.showing_solution:
             self.showing_solution = False
+            return
+        if self.solved or self.failed:
             return
         # Normal play
         tile_size = self.tile_size()
         offset_x = (self.screen.get_width() - (tile_size*GRID_SIZE + TILE_MARGIN*(GRID_SIZE-1)))//2
-        offset_y = 120
+        offset_y = 160
         for r, row in enumerate(self.grid):
             for c, tile in enumerate(row):
                 if tile.rect(offset_x, offset_y).collidepoint(pos):
@@ -216,12 +226,6 @@ class PuzzleGame:
                             self.failed = True
                             if self.fail_sound: self.fail_sound.play()
                     return
-        btn_rect = pygame.Rect(250, 20, 120, 40)
-        if btn_rect.collidepoint(pos):
-            self.reset()
-        sol_btn_rect = pygame.Rect(120, 550, 200, 40)
-        if sol_btn_rect.collidepoint(pos):
-            self.showing_solution = not self.showing_solution
     def run(self):
         running = True
         while running:
