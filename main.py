@@ -1,24 +1,18 @@
 #!/usr/bin/env python3
 """
-Tile Swap Puzzle — App-Store-Ready UI
-- Playful logo/title at top
-- Modern, bold color palette and gradient background
-- Floating pattern preview card
-- Friendly, readable instructions
-- Centered, spaced grid with 3D glassy tiles and slide animation
-- Large, tactile buttons always visible at bottom
-- Responsive, delightful, and professional
+Tile Swap Puzzle — Integrated UI & Fixed Mechanics
+- Compact pattern preview in top bar, right-aligned
+- No overlap, clear instructions, centered grid
+- Reliable tap-to-swap mechanics
 """
 import pygame
 import random
-import math
 
 # --- CONFIG ---
 BG_GRADIENT_TOP = (36, 37, 130)
 BG_GRADIENT_BOTTOM = (93, 193, 255)
 TITLE_COLOR = (255, 255, 255)
-PATTERN_CARD = (255, 255, 255)
-PATTERN_SHADOW = (60, 80, 140)
+PATTERN_BORDER = (220, 220, 240)
 TILE_COLORS = [(255, 99, 132), (54, 162, 235), (75, 192, 120)]  # red, blue, green
 SELECTED_BORDER = (255, 215, 0)
 INSTR_COLOR = (255,255,255)
@@ -62,7 +56,6 @@ class Tile:
         return pygame.Rect(x, y, self.size, self.size)
     def draw(self, screen, offset_x, offset_y, highlight=False):
         rect = self.rect(offset_x, offset_y)
-        # Glassy tile effect
         shadow_rect = rect.move(4, 8)
         pygame.draw.rect(screen, (0,0,0,60), shadow_rect, border_radius=22)
         color = TILE_COLORS[self.value-1]
@@ -73,7 +66,6 @@ class Tile:
         if highlight:
             pygame.draw.rect(screen, SELECTED_BORDER, rect, 6, border_radius=22)
     def animate_swap(self, target_pos=None):
-        # Slide animation
         if self.anim > 0 and target_pos:
             dx = (target_pos[0] - self.col) * (self.size + TILE_MARGIN) / self.anim
             dy = (target_pos[1] - self.row) * (self.size + TILE_MARGIN) / self.anim
@@ -147,40 +139,36 @@ class SwapPuzzleGame:
     def draw_title(self):
         label = self.title_font.render("Tile Swap Puzzle", True, TITLE_COLOR)
         self.screen.blit(label, (self.screen.get_width()//2 - label.get_width()//2, 28))
-    def draw_pattern_card(self, tile_size):
-        card_w = tile_size*GRID_SIZE//2 + 32
-        card_h = tile_size*GRID_SIZE//2 + 38
-        card_x = self.screen.get_width()//2 - card_w//2
-        card_y = 100
-        pygame.draw.rect(self.screen, PATTERN_SHADOW, (card_x+5, card_y+8, card_w, card_h), border_radius=18)
-        pygame.draw.rect(self.screen, PATTERN_CARD, (card_x, card_y, card_w, card_h), border_radius=18)
-        label = self.instr_font.render("Pattern", True, (60,80,140))
-        self.screen.blit(label, (card_x+14, card_y+10))
-        preview_tile = tile_size//3
+    def draw_top_bar(self, tile_size):
+        moves = self.font.render(f"Moves: {self.moves}", True, TITLE_COLOR)
+        level = self.font.render(f"Level: {self.level+1} of {len(LEVELS)}", True, TITLE_COLOR)
+        self.screen.blit(moves, (32, 80))
+        self.screen.blit(level, (self.screen.get_width()//2 - level.get_width()//2, 80))
+        # Compact pattern preview (right-aligned)
+        preview_tile = tile_size // 4
+        preview_w = preview_tile * GRID_SIZE + 6
+        preview_h = preview_tile * GRID_SIZE + 6
+        preview_x = self.screen.get_width() - preview_w - 24
+        preview_y = 76
+        pygame.draw.rect(self.screen, PATTERN_BORDER, (preview_x-3, preview_y-3, preview_w+6, preview_h+6), border_radius=10)
         for r in range(GRID_SIZE):
             for c in range(GRID_SIZE):
                 color = TILE_COLORS[self.solution[r][c]-1]
                 rect = pygame.Rect(
-                    card_x+14 + c*(preview_tile+2),
-                    card_y+34 + r*(preview_tile+2),
-                    preview_tile, preview_tile)
-                pygame.draw.rect(self.screen, color, rect, border_radius=8)
+                    preview_x + c*preview_tile,
+                    preview_y + r*preview_tile,
+                    preview_tile-2, preview_tile-2)
+                pygame.draw.rect(self.screen, color, rect, border_radius=6)
     def draw_instructions(self):
         instr = self.instr_font.render("Tap two tiles to swap and match the pattern", True, INSTR_COLOR)
-        self.screen.blit(instr, (self.screen.get_width()//2 - instr.get_width()//2, 200))
-    def draw_top_bar(self):
-        moves = self.font.render(f"Moves: {self.moves}", True, TITLE_COLOR)
-        level = self.font.render(f"Level: {self.level+1} of {len(LEVELS)}", True, TITLE_COLOR)
-        self.screen.blit(moves, (32, 80))
-        self.screen.blit(level, (self.screen.get_width()-level.get_width()-32, 80))
+        self.screen.blit(instr, (self.screen.get_width()//2 - instr.get_width()//2, 140))
     def draw_grid(self, tile_size):
         offset_x = self.screen.get_width()//2 - (tile_size*GRID_SIZE + TILE_MARGIN*(GRID_SIZE-1))//2
-        offset_y = 270
+        offset_y = 210
         for r in range(GRID_SIZE):
             for c in range(GRID_SIZE):
                 highlight = self.selected == (r, c)
                 self.grid[r][c].size = tile_size
-                # Animate slide if needed
                 if self.last_swap and (r, c) in self.last_swap:
                     target = self.last_swap[(r, c)]
                     self.grid[r][c].animate_swap(target)
@@ -199,8 +187,7 @@ class SwapPuzzleGame:
         self.draw_gradient_bg()
         tile_size = self.tile_size()
         self.draw_title()
-        self.draw_top_bar()
-        self.draw_pattern_card(tile_size)
+        self.draw_top_bar(tile_size)
         self.draw_instructions()
         self.draw_grid(tile_size)
         self.draw_solved()
@@ -230,13 +217,13 @@ class SwapPuzzleGame:
             return
         tile_size = self.tile_size()
         offset_x = self.screen.get_width()//2 - (tile_size*GRID_SIZE + TILE_MARGIN*(GRID_SIZE-1))//2
-        offset_y = 270
+        offset_y = 210
         for r in range(GRID_SIZE):
             for c in range(GRID_SIZE):
                 if self.grid[r][c].rect(offset_x, offset_y).collidepoint(pos):
                     if self.selected is None:
                         self.selected = (r, c)
-                    else:
+                    elif self.selected != (r, c):
                         r0, c0 = self.selected
                         # Animate slide
                         self.grid[r0][c0].anim = self.grid[r][c].anim = 6
@@ -246,8 +233,10 @@ class SwapPuzzleGame:
                         self.moves += 1
                         if self.check_solution():
                             self.solved = True
-                        # End animation after a few frames
                         pygame.time.set_timer(pygame.USEREVENT, 90)
+                    else:
+                        # Deselect if the same tile is tapped twice
+                        self.selected = None
                     return
     def run(self):
         running = True
