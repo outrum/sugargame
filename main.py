@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Mobile-first IQ Puzzle Game: Multi-level, feedback, sound, animation, progress tracker.
+Mobile-first IQ Puzzle Game: Multi-level, feedback, animation, progress tracker. Sound optional.
 """
 import pygame
 import time
@@ -71,17 +71,20 @@ class Tile:
 class PuzzleGame:
     def __init__(self):
         pygame.init()
-        pygame.mixer.init()
+        # DO NOT call pygame.mixer.init() to avoid errors on cloud/virtual environments
         self.screen = pygame.display.set_mode((400, 600))
         pygame.display.set_caption("IQ Puzzle Game")
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont(None, FONT_SIZE)
         self.level = 0
         self.showing_solution = False
-        # Sounds
-        self.tap_sound = load_sound("tap.wav")
-        self.win_sound = load_sound("win.wav")
-        self.fail_sound = load_sound("fail.wav")
+        # Sounds (optional)
+        try:
+            self.tap_sound = load_sound("tap.wav")
+            self.win_sound = load_sound("win.wav")
+            self.fail_sound = load_sound("fail.wav")
+        except Exception:
+            self.tap_sound = self.win_sound = self.fail_sound = None
         self.last_tap = (-1, -1)
         self.last_feedback = None
         self.reset()
