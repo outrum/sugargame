@@ -1,0 +1,19 @@
+# Tech Stack Documentation
+
+## Current Stack
+- **Language**: Python
+- **Frameworks/Libraries**:
+  - Pygame
+  - Sugar Toolkit (sugar3)
+  - GTK (via gi.repository)
+- **Packaging**: Standard Python package structure
+
+## Tooling
+- `.flake8` for linting
+- No explicit build system; manual integration
+
+---
+## Future Stack Considerations
+- [ ] Add support for CI/CD
+- [ ] Explore packaging for distribution (e.g., PyPI, Sugar activity bundles)
+- [ ] Consider dependency pinning

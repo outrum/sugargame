@@ -1,0 +1,28 @@
+# Windsurf Project Rules
+
+## General Principles
+- Prioritize simplicity and readability
+- Follow Python and Sugar style guides
+- Use minimal dependencies
+- Document complex or critical logic
+- Write atomic, testable code
+
+## Workflow
+- Use atomic commits focused on a single concern
+- Summarize objectives and context at session start; document progress at session end
+- Ask for clarification if context is unclear
+
+## Code Style & Formatting
+- 2 spaces for indentation, 80-char line limits
+- Use snake_case for variables/functions, PascalCase for classes
+- Prefer named imports
+
+## Project Structure
+- Keep core logic in `sugargame/`
+- Keep tests and examples in `test/`
+
+---
+## Future Rules
+- [ ] Add rules for release management
+- [ ] Specify review/approval process
+- [ ] Define contribution guidelines

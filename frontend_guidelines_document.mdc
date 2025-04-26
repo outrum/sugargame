@@ -1,0 +1,18 @@
+# Frontend Guidelines Documentation
+
+## Current Guidelines
+- **UI Layer**: Built using GTK via Sugar framework
+- **Game UI**: Implemented in Pygame, embedded in GTK
+- **Styling**: Follows Sugar and GTK conventions
+- **Accessibility**: Leverages Sugar's accessible widgets
+
+## Code Organization
+- Place activity UI logic in the main activity file (see `TestActivity.py`)
+- Use `sugargame.canvas.PygameCanvas` for embedding games
+- Keep Pygame game logic separate from Sugar/GTK UI logic
+
+---
+## Future Guidelines
+- [ ] Define code style for UI components
+- [ ] Expand accessibility requirements
+- [ ] Add guidelines for custom widget development

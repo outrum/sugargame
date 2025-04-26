@@ -1,0 +1,16 @@
+# Backend Structure Documentation
+
+## Current Structure
+- **Language**: Python
+- **Main Backend Modules**:
+  - `sugargame/canvas.py`: GTK widget for embedding Pygame
+  - `sugargame/event.py`: Event translation
+  - `sugargame/__init__.py`: Package init and helpers
+- **Tests**: Located in `test/`
+- **No separate backend server**: The project is a library/wrapper, not a client-server app.
+
+---
+## Future Backend Plans
+- [ ] Add support for additional event types
+- [ ] Modularize event translation logic
+- [ ] Add more robust error handling/logging

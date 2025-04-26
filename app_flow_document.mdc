@@ -1,0 +1,22 @@
+# App Flow Documentation
+
+## Overview
+This document describes the flow of the Sugargame application as of 2025-04-26.
+
+### Current Flow
+- **Initialization**: The main activity (see `TestActivity.py`) creates a `PygameCanvas` widget from the `sugargame` package.
+- **Game Loop**: The Pygame main loop is run inside the Sugar activity context. The GTK event loop is pumped within the Pygame loop for integration.
+- **Event Handling**: Input events are translated by `sugargame.event.Translator` and passed to the Pygame event system.
+- **UI Integration**: Sugar toolbars/widgets can be added to the activity UI.
+- **Persistence**: Hooks exist for saving/restoring state via the Sugar Journal.
+
+### Key Files
+- `sugargame/canvas.py`: Embeds Pygame into a GTK widget.
+- `sugargame/event.py`: Handles event translation between GTK and Pygame.
+- `test/TestActivity.py`: Example of integrating a game with Sugargame.
+
+---
+## Future Flow Considerations
+- [ ] Add diagrams for state transitions
+- [ ] Document custom toolbar/widget integration
+- [ ] Expand on Journal persistence hooks

@@ -1,0 +1,18 @@
+# Project Requirements Documentation
+
+## Current Requirements
+- **Python** (compatible with Sugar and Pygame)
+- **Pygame** (for game logic)
+- **Sugar Toolkit** (for activity integration)
+- **GTK** (for UI embedding)
+- **gi.repository** (for Python GTK bindings)
+
+## Installation
+- Place `sugargame` package in your activity source directory
+- Follow example in `test/` for integration
+
+---
+## Future Requirements
+- [ ] List minimum/maximum supported versions
+- [ ] Add dependency management instructions
+- [ ] Document optional dependencies

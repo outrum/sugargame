@@ -1,0 +1,9 @@
+site_name: Sugargame Docs
+nav:
+  - Home: index.md
+  - App Flow: app_flow_document.md
+  - Backend: backend_structure_document.md
+  - Frontend Guidelines: frontend_guidelines_document.md
+  - Requirements: project_requirements_document.md
+  - Tech Stack: tech_stack_document.md
+  - Project Rules: windsurf_project_rules.md
