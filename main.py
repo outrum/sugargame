@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Playable Pong-like game: Ball, paddle, scoring, game over, restart.
+Playable Paddle-Ball Game: Ball, paddle, scoring, game over, restart.
+- Paddle can be controlled by mouse, keyboard, and on-screen buttons (for Replit).
 """
 import pygame
 
@@ -11,6 +12,8 @@ PADDLE_WIDTH, PADDLE_HEIGHT = 120, 16
 PADDLE_SPEED = 10
 BALL_SPEED_X, BALL_SPEED_Y = 6, -6
 FONT_SIZE = 32
+BUTTON_WIDTH, BUTTON_HEIGHT = 60, 40
+BUTTON_Y = HEIGHT - BUTTON_HEIGHT - 60
 
 class Game:
     def __init__(self):
@@ -19,6 +22,10 @@ class Game:
         pygame.display.set_caption("Paddle Ball Game")
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont(None, FONT_SIZE)
+        self.left_button = pygame.Rect(30, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT)
+        self.right_button = pygame.Rect(WIDTH-30-BUTTON_WIDTH, BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT)
+        self.left_held = False
+        self.right_held = False
         self.reset()
 
     def reset(self):
@@ -44,11 +51,29 @@ class Game:
             over_surf = self.font.render("GAME OVER! Press R to restart", True, (255, 0, 0))
             rect = over_surf.get_rect(center=(WIDTH//2, HEIGHT//2))
             self.screen.blit(over_surf, rect)
+        # Draw on-screen buttons
+        pygame.draw.rect(self.screen, (200, 200, 200), self.left_button)
+        pygame.draw.rect(self.screen, (200, 200, 200), self.right_button)
+        left_surf = self.font.render("<", True, (0, 0, 0))
+        right_surf = self.font.render(">", True, (0, 0, 0))
+        self.screen.blit(left_surf, self.left_button.move(18, 2))
+        self.screen.blit(right_surf, self.right_button.move(18, 2))
         pygame.display.flip()
 
     def update(self):
         if self.game_over:
             return
+        # Move paddle by keyboard or on-screen button
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT] or self.left_held:
+            self.paddle_x -= PADDLE_SPEED
+        if keys[pygame.K_RIGHT] or self.right_held:
+            self.paddle_x += PADDLE_SPEED
+        # Move paddle by mouse
+        mouse_x, _ = pygame.mouse.get_pos()
+        if pygame.mouse.get_focused():
+            self.paddle_x = mouse_x - PADDLE_WIDTH // 2
+        self.paddle_x = max(0, min(WIDTH - PADDLE_WIDTH, self.paddle_x))
         # Move ball
         self.ball_x += self.ball_vx
         self.ball_y += self.ball_vy
@@ -68,19 +93,22 @@ class Game:
             self.game_over = True
 
     def handle_events(self):
-        keys = pygame.key.get_pressed()
-        if not self.game_over:
-            if keys[pygame.K_LEFT]:
-                self.paddle_x -= PADDLE_SPEED
-            if keys[pygame.K_RIGHT]:
-                self.paddle_x += PADDLE_SPEED
-            self.paddle_x = max(0, min(WIDTH - PADDLE_WIDTH, self.paddle_x))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False
             if event.type == pygame.KEYDOWN and self.game_over:
                 if event.key == pygame.K_r:
                     self.reset()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.left_button.collidepoint(event.pos):
+                    self.left_held = True
+                if self.right_button.collidepoint(event.pos):
+                    self.right_held = True
+            if event.type == pygame.MOUSEBUTTONUP:
+                if self.left_held:
+                    self.left_held = False
+                if self.right_held:
+                    self.right_held = False
         return True
 
     def run(self):
